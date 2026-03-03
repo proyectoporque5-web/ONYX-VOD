@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie Premium</title>
+    <script>
+      window.global = window;
+      if (typeof globalThis.ErrorUtils === 'undefined') {
+        let globalHandler = () => {};
+        globalThis.ErrorUtils = {
+          setGlobalHandler: (handler) => { globalHandler = handler; },
+          getGlobalHandler: () => globalHandler,
+          reportFatalError: (e) => { console.error('Fatal Error:', e); },
+          reportError: (e) => { console.error('Error:', e); },
+        };
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

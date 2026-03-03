@@ -1,0 +1,5 @@
+{
+  "name": "MoviePremium",
+  "description": "A VOD Aggregator application (Netflix Clone) using TMDB API.",
+  "requestFramePermissions": []
+}
