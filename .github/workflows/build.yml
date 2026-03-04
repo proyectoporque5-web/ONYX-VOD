@@ -1,4 +1,4 @@
-name: Construir APK ONYX (Blindado)
+name: Construir APK ONYX (Auto-Fix Assets)
 
 on:
   push:
@@ -7,14 +7,14 @@ on:
 
 jobs:
   build:
-    name: Compilación Limpia Android
+    name: Compilación con Assets Fantasma
     runs-on: ubuntu-latest
 
     steps:
       - name: 1. Descargar Código
         uses: actions/checkout@v4
 
-      - name: 2. Configurar Entorno (Node & Java)
+      - name: 2. Configurar Entorno
         uses: actions/setup-node@v4
         with:
           node-version: 18
@@ -23,26 +23,32 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 3. Limpieza Nuclear de Dependencias
+      - name: 3. Limpieza e Instalación
         run: |
           rm -rf node_modules
-          rm -f package-lock.json
           npm install --legacy-peer-deps
+          npm install -g expo-cli eas-cli
 
-      - name: 4. Instalar CLI de Expo Globalmente
-        run: npm install -g expo-cli eas-cli
+      - name: 4. 🚨 INYECTAR IMÁGENES FANTASMA (Fix Crítico)
+        run: |
+          mkdir -p assets
+          # Descargamos iconos por defecto de Expo para que no falle
+          curl -o assets/icon.png https://raw.githubusercontent.com/expo/expo/main/templates/expo-template-blank/assets/icon.png
+          curl -o assets/splash.png https://raw.githubusercontent.com/expo/expo/main/templates/expo-template-blank/assets/splash.png
+          curl -o assets/adaptive-icon.png https://raw.githubusercontent.com/expo/expo/main/templates/expo-template-blank/assets/adaptive-icon.png
+          curl -o assets/favicon.png https://raw.githubusercontent.com/expo/expo/main/templates/expo-template-blank/assets/favicon.png
+          ls -R assets # Verificamos que se descargaron
 
-      - name: 5. Generar Carpetas Nativas (Prebuild)
+      - name: 5. Generar Carpetas Nativas
         run: npx expo prebuild --platform android --clean
 
-      - name: 6. Dar Permisos al Compilador
-        run: chmod +x android/gradlew
-
-      - name: 7. Compilar APK (Debug)
+      - name: 6. Compilar APK (Debug)
         working-directory: android
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-      - name: 8. Subir APK Terminado
+      - name: 7. Subir APK Terminado
         uses: actions/upload-artifact@v4
         with:
           name: ONYX-APK-FINAL
