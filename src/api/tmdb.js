@@ -85,6 +85,60 @@ export const getSciFiMovies = async () => {
   return response.data;
 };
 
+export const getDramaMovies = async () => {
+  const response = await tmdbClient.get('/discover/movie', {
+    params: {
+      with_genres: 18,
+    },
+  });
+  return response.data;
+};
+
+export const getThrillerMovies = async () => {
+  const response = await tmdbClient.get('/discover/movie', {
+    params: {
+      with_genres: 53,
+    },
+  });
+  return response.data;
+};
+
+export const getRomanceMovies = async () => {
+  const response = await tmdbClient.get('/discover/movie', {
+    params: {
+      with_genres: 10749,
+    },
+  });
+  return response.data;
+};
+
+export const getFamilyMovies = async () => {
+  const response = await tmdbClient.get('/discover/movie', {
+    params: {
+      with_genres: 10751,
+    },
+  });
+  return response.data;
+};
+
+export const getDocumentaries = async () => {
+  const response = await tmdbClient.get('/discover/movie', {
+    params: {
+      with_genres: 99,
+    },
+  });
+  return response.data;
+};
+
+export const getAnimationMovies = async () => {
+  const response = await tmdbClient.get('/discover/movie', {
+    params: {
+      with_genres: 16,
+    },
+  });
+  return response.data;
+};
+
 export const getLogo = (movie) => {
   if (!movie?.images?.logos) return null;
   const logos = movie.images.logos;

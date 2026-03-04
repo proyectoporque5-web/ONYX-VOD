@@ -6,11 +6,16 @@ import { Search } from 'lucide-react-native';
 import { MovieCard } from '../src/components/MovieCard';
 import { 
   getTrendingMovies, 
-  getTopRatedMovies, 
   getActionMovies, 
   getComedyMovies, 
   getHorrorMovies, 
   getSciFiMovies,
+  getDramaMovies,
+  getThrillerMovies,
+  getRomanceMovies,
+  getFamilyMovies,
+  getDocumentaries,
+  getAnimationMovies,
   getMovieDetails,
   getLogo
 } from '../src/api/tmdb';
@@ -21,11 +26,16 @@ const LOGO_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 export default function Home() {
   const [trending, setTrending] = useState([]);
-  const [topRated, setTopRated] = useState([]);
   const [action, setAction] = useState([]);
   const [comedy, setComedy] = useState([]);
+  const [drama, setDrama] = useState([]);
+  const [thriller, setThriller] = useState([]);
   const [horror, setHorror] = useState([]);
   const [scifi, setScifi] = useState([]);
+  const [romance, setRomance] = useState([]);
+  const [family, setFamily] = useState([]);
+  const [animation, setAnimation] = useState([]);
+  const [documentary, setDocumentary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [heroLogo, setHeroLogo] = useState(null);
 
@@ -34,26 +44,41 @@ export default function Home() {
       try {
         const [
           trendingData, 
-          topRatedData, 
           actionData, 
           comedyData, 
+          dramaData,
+          thrillerData,
           horrorData, 
-          scifiData
+          scifiData,
+          romanceData,
+          familyData,
+          animationData,
+          documentaryData
         ] = await Promise.all([
           getTrendingMovies(),
-          getTopRatedMovies(),
           getActionMovies(),
           getComedyMovies(),
+          getDramaMovies(),
+          getThrillerMovies(),
           getHorrorMovies(),
-          getSciFiMovies()
+          getSciFiMovies(),
+          getRomanceMovies(),
+          getFamilyMovies(),
+          getAnimationMovies(),
+          getDocumentaries()
         ]);
 
         setTrending(trendingData.results);
-        setTopRated(topRatedData.results);
         setAction(actionData.results);
         setComedy(comedyData.results);
+        setDrama(dramaData.results);
+        setThriller(thrillerData.results);
         setHorror(horrorData.results);
         setScifi(scifiData.results);
+        setRomance(romanceData.results);
+        setFamily(familyData.results);
+        setAnimation(animationData.results);
+        setDocumentary(documentaryData.results);
       } catch (error) {
         console.error("Error fetching movies:", error);
       } finally {
@@ -75,7 +100,7 @@ export default function Home() {
 
   const renderMovieItem = useCallback(({ item, index, sectionTitle }) => {
     // Check if this is the trending section
-    const isTrendingSection = sectionTitle === "Las 10 películas más populares hoy en tu país";
+    const isTrendingSection = sectionTitle === "Tendencias Globales";
     return (
       <MovieCard 
         item={item} 
@@ -134,6 +159,7 @@ export default function Home() {
               source={{ uri: `${BACKDROP_BASE_URL}${heroMovie.backdrop_path || heroMovie.poster_path}` }}
               style={{ width: width, height: 450 }}
               resizeMode="cover"
+              referrerPolicy="no-referrer"
             />
             
             {/* Gradient Overlay */}
@@ -152,6 +178,7 @@ export default function Home() {
                       source={{ uri: `${LOGO_BASE_URL}${heroLogo}` }}
                       style={{ width: width * 0.8, height: 120, marginBottom: 20, alignSelf: 'center' }}
                       resizeMode="contain"
+                      referrerPolicy="no-referrer"
                     />
                   ) : (
                     <Text className="text-white text-4xl font-extrabold mb-2 text-center shadow-lg">
@@ -186,12 +213,17 @@ export default function Home() {
         )}
   
         {/* Movie Rows */}
-        {renderSection("Las 10 películas más populares hoy en tu país", trending)}
-        {renderSection("Tendencias Globales", topRated)}
-        {renderSection("Acción Implacable", action)}
+        {renderSection("Tendencias Globales", trending)}
+        {renderSection("Acción y Aventura", action)}
         {renderSection("Comedias", comedy)}
-        {renderSection("Terror", horror)}
-        {renderSection("Ciencia Ficción", scifi)}
+        {renderSection("Drama y Emoción", drama)}
+        {renderSection("Suspenso y Thriller", thriller)}
+        {renderSection("Cine de Terror", horror)}
+        {renderSection("Ciencia Ficción y Fantasía", scifi)}
+        {renderSection("Romance", romance)}
+        {renderSection("Para toda la Familia", family)}
+        {renderSection("Animación", animation)}
+        {renderSection("Documentales", documentary)}
   
         <View className="h-20" />
       </ScrollView>

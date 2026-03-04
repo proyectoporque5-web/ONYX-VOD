@@ -46,13 +46,12 @@ export default function MovieDetail() {
       const streams = await resolveMovieStream(id, imdbId);
       
       if (streams.length === 1) {
-        const encodedUrl = encodeURIComponent(streams[0].url);
-        router.push(`/player/${encodedUrl}`);
+        // Navigate to new WebView player
+        router.push(`/player/webview?url=${encodeURIComponent(streams[0].url)}`);
       } else if (streams.length > 1) {
         setServers(streams);
         setModalVisible(true);
       } else {
-        // Handle no streams found (optional: show alert)
         console.log("No streams found");
       }
     } catch (error) {
@@ -64,8 +63,8 @@ export default function MovieDetail() {
 
   const handleServerPress = (url) => {
     setModalVisible(false);
-    const encodedUrl = encodeURIComponent(url);
-    router.push(`/player/${encodedUrl}`);
+    // Navigate to new WebView player
+    router.push(`/player/webview?url=${encodeURIComponent(url)}`);
   };
 
   const onStateChange = useCallback((state) => {
