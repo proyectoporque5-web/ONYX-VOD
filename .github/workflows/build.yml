@@ -1,4 +1,4 @@
-name: Construir APK ONYX (Auto-Fix Assets)
+name: Construir APK ONYX (Final Blindado)
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Compilación con Assets Fantasma
+    name: Compilación APK
     runs-on: ubuntu-latest
 
     steps:
@@ -23,21 +23,26 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: 3. Limpieza e Instalación
+      - name: 3. Instalación de Herramientas
         run: |
-          rm -rf node_modules
           npm install --legacy-peer-deps
           npm install -g expo-cli eas-cli
 
-      - name: 4. 🚨 INYECTAR IMÁGENES FANTASMA (Fix Crítico)
+      - name: 4. 🚨 GENERAR ASSETS SINTÉTICOS (Anti-Error)
         run: |
           mkdir -p assets
-          # Descargamos iconos por defecto de Expo para que no falle
-          curl -o assets/icon.png https://raw.githubusercontent.com/expo/expo/main/templates/expo-template-blank/assets/icon.png
-          curl -o assets/splash.png https://raw.githubusercontent.com/expo/expo/main/templates/expo-template-blank/assets/splash.png
-          curl -o assets/adaptive-icon.png https://raw.githubusercontent.com/expo/expo/main/templates/expo-template-blank/assets/adaptive-icon.png
-          curl -o assets/favicon.png https://raw.githubusercontent.com/expo/expo/main/templates/expo-template-blank/assets/favicon.png
-          ls -R assets # Verificamos que se descargaron
+          # Generamos imágenes PNG válidas usando un servicio dummy estable
+          # Icono cuadrado 1024x1024
+          curl -L -o assets/icon.png "https://dummyimage.com/1024x1024/000000/ff0000.png&text=ONYX"
+          # Icono adaptativo
+          cp assets/icon.png assets/adaptive-icon.png
+          # Pantalla de carga (Splash) vertical
+          curl -L -o assets/splash.png "https://dummyimage.com/1242x2436/000000/ff0000.png&text=ONYX+LOADING"
+          # Favicon pequeño
+          curl -L -o assets/favicon.png "https://dummyimage.com/48x48/000000/ff0000.png"
+          
+          # Verificar que pesan algo (no son archivos vacíos)
+          ls -lh assets/
 
       - name: 5. Generar Carpetas Nativas
         run: npx expo prebuild --platform android --clean
