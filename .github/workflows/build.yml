@@ -1,4 +1,4 @@
-name: Construir APK ONYX (Auto-Repair Dependencies)
+name: Construir APK ONYX (Operación Fénix)
 
 on:
   push:
@@ -7,58 +7,35 @@ on:
 
 jobs:
   build:
-    name: Compilación Reparadora
+    name: Compilación Blindada
     runs-on: ubuntu-latest
 
     steps:
       - name: 1. Descargar Código
         uses: actions/checkout@v4
 
-      - name: 2. Configurar Entorno
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - uses: actions/setup-java@v4
+      - name: 2. Configurar Entorno (Java 17 es OBLIGATORIO)
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-      - name: 3. 🚨 REPARACIÓN DE DEPENDENCIAS (El paso mágico)
+      - name: 3. 🚨 REINICIO FORZADO DE DEPENDENCIAS
         run: |
-          # Borramos cualquier instalación previa corrupta
+          # 1. Borramos cualquier rastro de configuración corrupta
           rm -rf node_modules
           rm -f package-lock.json
+          rm -rf android
           
-          # Instalamos las dependencias base
-          npm install
+          # 2. Instalamos EXPLICITAMENTE las versiones estables de SDK 50
+          # Esto evita que la IA elija versiones que no existen
+          npm install expo@^50.0.0 react-native@0.73.6 react@18.2.0 --save-exact
           
-          # Instalamos el CLI de Expo
+          # 3. Instalamos las herramientas críticas
           npm install -g expo-cli eas-cli
           
-          # FORZAMOS la alineación de versiones compatibles
-          # Esto arregla el error de "topVersion" y "expo-image"
-          npx expo install --fix
-
-      - name: 4. Generar Assets Sintéticos (Para evitar error de iconos)
-        run: |
-          mkdir -p assets
-          curl -L -o assets/icon.png "https://dummyimage.com/1024x1024/000000/ff0000.png&text=ONYX"
-          cp assets/icon.png assets/adaptive-icon.png
-          curl -L -o assets/splash.png "https://dummyimage.com/1242x2436/000000/ff0000.png&text=LOADING"
-          curl -L -o assets/favicon.png "https://dummyimage.com/48x48/000000/ff0000.png"
-
-      - name: 5. Generar Carpetas Nativas (Prebuild)
-        run: npx expo prebuild --platform android --clean
-
-      - name: 6. Compilar APK (Modo Permisivo)
-        working-directory: android
-        run: |
-          chmod +x gradlew
-          # Usamos -x lint para que no se detenga por advertencias tontas
-          ./gradlew assembleDebug -x lint
-
-      - name: 7. Subir APK Terminado
-        uses: actions/upload-artifact@v4
-        with:
-          name: ONYX-APK-FINAL
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          # 4. Instalamos el resto de librerías alineándolas al SDK 50
+          npx expo install expo-
