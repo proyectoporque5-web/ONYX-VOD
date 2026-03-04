@@ -1,4 +1,4 @@
-name: Construir APK ONYX
+name: Construir APK ONYX V4
 
 on:
   push:
@@ -12,15 +12,15 @@ jobs:
 
     steps:
       - name: Descargar Código
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configurar Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Configurar Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -31,13 +31,13 @@ jobs:
       - name: Generar Archivos Nativos (Expo)
         run: npx expo prebuild --platform android
 
-      - name: Compilar APK (Sin llaves)
+      - name: Compilar APK (Debug)
         run: |
           cd android
           ./gradlew assembleDebug
 
-      - name: Subir APK para Descargar
-        uses: actions/upload-artifact@v3
+      - name: Subir APK Terminado
+        uses: actions/upload-artifact@v4
         with:
-          name: ONYX-APK-Listo
+          name: ONYX-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
