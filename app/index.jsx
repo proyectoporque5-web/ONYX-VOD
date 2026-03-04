@@ -117,11 +117,7 @@ export default function Home() {
       
       {/* Header with Logo and Search */}
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 50, paddingTop: 50, paddingBottom: 10, paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Image 
-          source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg' }} 
-          style={{ width: 40, height: 40 }} 
-          resizeMode="contain"
-        />
+        <Text style={{ color: '#E50914', fontSize: 28, fontWeight: '900', letterSpacing: 2 }}>ONYX</Text>
         <Link href="/search" asChild>
           <TouchableOpacity>
             <Search color="white" size={28} />
