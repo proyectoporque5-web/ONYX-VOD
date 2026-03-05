@@ -1,13 +1,13 @@
-name: Construir APK ONYX FINAL V8
+name: Construir APK ONYX FINAL (PRODUCCIÓN)
 
 on:
-  workflow_dispatch: # Permite disparar manualmente
+  workflow_dispatch:
   push:
-    branches: [ main, master ]
+    branches:[ main, master ]
 
 jobs:
   build:
-    name: Compilación Blindada Android
+    name: Compilación de Producción
     runs-on: ubuntu-latest
 
     steps:
@@ -25,41 +25,46 @@ jobs:
         with:
           node-version: '18'
 
-      - name: 4. Instalación de Dependencias (Modo Seguro)
+      - name: 4. Instalación de Dependencias
         run: |
-          # Limpiamos caché previa por si acaso
           npm cache clean --force
-          
-          # Instalamos ignorando conflictos de versiones (Vital para código generado por IA)
           npm install --legacy-peer-deps
-          
-          # Instalamos herramientas globales
           npm install -g expo-cli eas-cli
 
-      - name: 5. Generar Assets de Emergencia (Iconos)
+      - name: 5. Generar Assets de Emergencia
         run: |
           mkdir -p assets
-          # Usamos redirección > para asegurar que el archivo se cree sí o sí
           curl -L "https://dummyimage.com/1024x1024/000000/ff0000.png&text=ONYX" > assets/icon.png
           cp assets/icon.png assets/adaptive-icon.png
           curl -L "https://dummyimage.com/1242x2436/000000/ff0000.png&text=LOADING" > assets/splash.png
           curl -L "https://dummyimage.com/48x48/000000/ff0000.png" > assets/favicon.png
-          
-          # Verificamos que existen
-          ls -lh assets/
 
-      - name: 6. Prebuild Android (Generar carpetas nativas)
+      - name: 6. Prebuild Android
         run: npx expo prebuild --platform android --clean
 
-      - name: 7. Compilar APK (Ignorando Advertencias)
+      - name: 7. Compilar APK (MODO PRODUCCIÓN)
         working-directory: android
         run: |
           chmod +x gradlew
-          # -x lint evita que se detenga por errores menores de estilo
-          ./gradlew assembleDebug -x lint --stacktrace
+          # assembleRelease empaqueta todo el código DENTRO del APK
+          ./gradlew assembleRelease -x lint --stacktrace
 
-      - name: 8. Subir APK Terminado
+      - name: 8. Falsificación de Firma de Seguridad (Keystore)
+        run: |
+          cd android/app/build/outputs/apk/release
+          
+          # 1. Generamos una llave de seguridad falsa
+          keytool -genkey -v -keystore onyx.keystore -alias onyx -keyalg RSA -keysize 2048 -validity 10000 -storepass onyx123 -keypass onyx123 -dname "CN=Onyx,O=Onyx,C=US"
+          
+          # 2. Buscamos el firmador de Android en la máquina
+          APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -r | head -n 1)
+          
+          # 3. Detectamos el APK generado y lo firmamos
+          APK_FILE=$(ls *.apk | head -n 1)
+          $APKSIGNER sign --ks onyx.keystore --ks-pass pass:onyx123 --out ONYX-INDEPENDIENTE.apk $APK_FILE
+
+      - name: 9. Subir APK Terminado
         uses: actions/upload-artifact@v4
         with:
-          name: ONYX-APP-FINAL
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: ONYX-APP-PRODUCCION
+          path: android/app/build/outputs/apk/release/ONYX-INDEPENDIENTE.apk
