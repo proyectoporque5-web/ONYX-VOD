@@ -1,4 +1,4 @@
-name: Construir APK ONYX (Manual Install)
+name: Construir APK ONYX (Reparación de Entorno)
 
 on:
   push:
@@ -7,50 +7,21 @@ on:
 
 jobs:
   build:
-    name: Compilación Manual
     runs-on: ubuntu-latest
-
     steps:
-      - name: 1. Descargar Código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: 2. Configurar Entorno
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
       - uses: actions/setup-node@v4
-        with:
-          node-version: 18
+        with: {node-version: 18}
+      - uses: actions/setup-java@v4
+        with: {distribution: 'zulu', java-version: '17'}
 
-      - name: 3. 🚨 INSTALACIÓN QUIRÚRGICA (Sin automatización fallida)
+      - name: Instalación de herramientas
         run: |
-          # Limpiamos todo
-          rm -rf node_modules package-lock.json android
-          
-          # Instalamos el núcleo
-          npm install expo@~50.0.14 react-native@0.73.6 react@18.2.0 --save-exact
-          
-          # Instalamos las herramientas
+          npm install --legacy-peer-deps
           npm install -g expo-cli eas-cli
-          
-          # Instalamos las librerías UNA POR UNA para evitar errores de nombre
-          npm install expo-router@~3.4.8 \
-                      expo-av@~13.10.5 \
-                      expo-constants@~15.4.5 \
-                      expo-linking@~6.2.2 \
-                      expo-status-bar@~1.11.1 \
-                      react-native-safe-area-context@4.8.2 \
-                      react-native-screens@~3.29.0 \
-                      react-native-webview@13.6.4 \
-                      react-native-youtube-iframe@^2.3.0 \
-                      nativewind@^2.0.11 \
-                      tailwindcss@^3.3.2 \
-                      axios@^1.6.0 \
-                      @react-native-async-storage/async-storage@1.21.0 \
-                      --save-exact
 
-      - name: 4. Generar Assets
+      - name: Generar Assets
         run: |
           mkdir -p assets
           curl -L -o assets/icon.png "https://dummyimage.com/1024x1024/000000/ff0000.png&text=ONYX"
@@ -58,16 +29,24 @@ jobs:
           curl -L -o assets/splash.png "https://dummyimage.com/1242x2436/000000/ff0000.png&text=LOADING"
           curl -L -o assets/favicon.png "https://dummyimage.com/48x48/000000/ff0000.png"
 
-      - name: 5. Prebuild Android
-        run: npx expo prebuild --platform android --clean
+      - name: Prebuild & Fix SDK Path
+        run: |
+          # Generamos carpetas nativas
+          npx expo prebuild --platform android --clean
+          
+          # Inyección del SDK PATH obligatoria para Gradle (Solución de la Biblia)
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          
+          # Ajuste de memoria para evitar el Error 137
+          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m" >> android/gradle.properties
 
-      - name: 6. Compilar APK
+      - name: Compilar APK
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug -x lint
+          ./gradlew assembleDebug --stacktrace
 
-      - name: 7. Subir APK
+      - name: Subir APK
         uses: actions/upload-artifact@v4
         with:
           name: ONYX-APK-FINAL
