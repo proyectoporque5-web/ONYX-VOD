@@ -1,0 +1,65 @@
+name: Construir APK ONYX FINAL V8
+
+on:
+  workflow_dispatch: # Permite disparar manualmente
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    name: Compilación Blindada Android
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Descargar Código
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 3. Configurar Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 4. Instalación de Dependencias (Modo Seguro)
+        run: |
+          # Limpiamos caché previa por si acaso
+          npm cache clean --force
+          
+          # Instalamos ignorando conflictos de versiones (Vital para código generado por IA)
+          npm install --legacy-peer-deps
+          
+          # Instalamos herramientas globales
+          npm install -g expo-cli eas-cli
+
+      - name: 5. Generar Assets de Emergencia (Iconos)
+        run: |
+          mkdir -p assets
+          # Usamos redirección > para asegurar que el archivo se cree sí o sí
+          curl -L "https://dummyimage.com/1024x1024/000000/ff0000.png&text=ONYX" > assets/icon.png
+          cp assets/icon.png assets/adaptive-icon.png
+          curl -L "https://dummyimage.com/1242x2436/000000/ff0000.png&text=LOADING" > assets/splash.png
+          curl -L "https://dummyimage.com/48x48/000000/ff0000.png" > assets/favicon.png
+          
+          # Verificamos que existen
+          ls -lh assets/
+
+      - name: 6. Prebuild Android (Generar carpetas nativas)
+        run: npx expo prebuild --platform android --clean
+
+      - name: 7. Compilar APK (Ignorando Advertencias)
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          # -x lint evita que se detenga por errores menores de estilo
+          ./gradlew assembleDebug -x lint --stacktrace
+
+      - name: 8. Subir APK Terminado
+        uses: actions/upload-artifact@v4
+        with:
+          name: ONYX-APP-FINAL
+          path: android/app/build/outputs/apk/debug/app-debug.apk
